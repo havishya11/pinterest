@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:soapui-project id="f4c66429-d97f-48f2-a0f1-48024aaf8e0b" activeEnvironment="Default" name="REST Project 1" soapui-version="5.4.0" abortOnError="false" runType="SEQUENTIAL" xmlns:con="http://eviware.com/soapui/config"><con:settings/><con:interface xsi:type="con:RestService" id="70e76bab-0023-4397-ae4d-ef3ca8ecf3e3" wadlVersion="http://wadl.dev.java.net/2009/02" name="" type="rest" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart=""/><con:endpoints><con:endpoint>https://api.pinterest.com</con:endpoint></con:endpoints><con:resource name="User" path="/v1/boards/${Looper#id}" id="6a542506-5352-4350-b271-56bce8bf31ee"><con:settings/><con:parameters><con:parameter><con:name>access_token</con:name><con:value/><con:style>QUERY</con:style><con:default/><con:description xsi:nil="true"/></con:parameter></con:parameters><con:method name="User 1" id="10adacac-f299-42f8-aefb-0e68d4c8236c" method="GET"><con:settings/><con:parameters/><con:representation type="FAULT"><con:mediaType>application/json</con:mediaType><con:status>404</con:status><con:params/></con:representation><con:representation type="RESPONSE"><con:mediaType>application/json</con:mediaType><con:status>200</con:status><con:params/></con:representation><con:request name="Request 1" id="7b3da0cf-707e-4647-b517-19dc50b1c524" mediaType="application/json"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:endpoint>https://api.pinterest.com</con:endpoint><con:request/><con:originalUri>https://api.pinterest.com/v1/boards//User</con:originalUri><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters><entry key="access_token" value="AbVHC-XfXkjt0cgeE9rkMMtRUVgcFTEOHwl65LxE8rwi8EA7pwAAAAA" xmlns="http://eviware.com/soapui/config"/></con:parameters><con:parameterOrder><con:entry>access_token</con:entry></con:parameterOrder></con:request></con:method></con:resource></con:interface><con:testSuite id="1a7c5198-7615-4d98-8d3f-cf81a80ed844" name="Data Driven"><con:settings/><con:runType>SEQUENTIAL</con:runType><con:testCase id="f549bd7f-0d8c-4e38-9f37-0cf31210a8a2" failOnError="false" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="Data" searchProperties="true" timeout="0" wsrmEnabled="false" wsrmVersion="1.0" wsrmAckTo="" amfAuthorisation="false" amfEndpoint="" amfLogin="" amfPassword=""><con:settings/><con:testStep type="groovy" name="Initializer" id="083c07e4-ac2b-41d5-974c-77c43fad78a7"><con:settings/><con:config><script>
+def myTestCase = context.testCase
+
+propTestStep = myTestCase.getTestStepByName("Looper")
+propTestStep.setPropertyValue("Total", "")
+	propTestStep.setPropertyValue("Count", "1")
+	propTestStep.setPropertyValue("Next", "")
+	propTestStep.setPropertyValue("StopLoop", "")</script></con:config></con:testStep><con:testStep type="groovy" name="Excel" id="7e8dba3d-f4a2-4995-beb9-9acabb60d23d"><con:settings/><con:config><script>import com.eviware.soapui.support.XmlHolder
+import jxl.*
+import jxl.write.*
+
+// DECLARE THE VARIABLES
+def myTestCase = context.testCase //myTestCase contains the test case
+def counter,next,previous,size //Variables used to handle the loop and to move inside the file
+def sheetNo
+
+//def myTestCase = context.testCase
+
+propTestStep = myTestCase.getTestStepByName("Looper")
+//propTestStep.setPropertyValue("Total", "")
+//	propTestStep.setPropertyValue("Count", "1")
+//	propTestStep.setPropertyValue("Next", "")
+//	propTestStep.setPropertyValue("StopLoop", "")
+
+
+def projectPath = new com.eviware.soapui.support.GroovyUtils(context).projectPath //gets the path of the project root
+
+fileName = projectPath + "\\Login.xls"		
+	fileName = fileName.replace('\\','\\\\')
+
+	if (projectPath == ""){
+		fileName = "C:\\Users\\lenovo\\Desktop\\ohpen\\Login.xls"
+	}
+
+Workbook workBook = Workbook.getWorkbook(new File(fileName)) //file containing the data
+
+Sheet sheetLogin = workBook.getSheet(0) //save the first sheet in sheet1
+
+sizeRows = sheetLogin.getRows().toInteger()
+ 
+propTestStep.setPropertyValue("Total", sizeRows.toString())
+ 
+counter = propTestStep.getPropertyValue("Count").toString() //counter variable contains iteration number
+ 
+counter = counter.toInteger() //
+ 
+next = (counter > sizeRows? 0: counter+1) //set the next value
+ 
+//OBTAINING THE DATA YOU NEED
+Cell ID = sheetLogin.getCell(0,counter) // getCell(column,row) //obtains userType
+
+workBook.close() //close the file
+ 
+////////////////////////////////////
+usrid = ID.getContents() 
+
+
+propTestStep.setPropertyValue("id", usrid) //the value is saved in the property
+
+ 
+propTestStep.setPropertyValue("Count", next.toString()) //increase Count value
+ 
+next++ //increase next value
+ 
+propTestStep.setPropertyValue("Next", next.toString()) //set Next value on the properties step
+ 
+//Decide if the test has to be run again or not
+if (counter == sizeRows-1){
+	propTestStep.setPropertyValue("StopLoop", "T")
+	//log.info "Setting the stoploop property now..."
+}
+else if (counter==0){
+	def runner = new com.eviware.soapui.impl.wsdl.testcase.WsdlTestCaseRunner(testRunner.testCase, null)
+	propTestStep.setPropertyValue("StopLoop", "F")
+}
+else{
+	propTestStep.setPropertyValue("StopLoop", "F")
+}</script></con:config></con:testStep><con:testStep type="properties" name="Looper" id="32b382e2-71ce-4b0b-8c5f-030f3c375fac"><con:settings/><con:config xsi:type="con:PropertiesStep" saveFirst="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:properties><con:property><con:name>id</con:name><con:value/></con:property><con:property><con:name>Total</con:name><con:value/></con:property><con:property><con:name>Count</con:name><con:value>1</con:value></con:property><con:property><con:name>Next</con:name><con:value/></con:property><con:property><con:name>StopLoop</con:name><con:value/></con:property></con:properties></con:config></con:testStep><con:testStep type="restrequest" name="Get" id="9a55b748-7ba9-4dce-a6a1-a52a7af1966a"><con:settings/><con:config service="" methodName="User 1" resourcePath="/v1/boards/${Looper#id}" xsi:type="con:RestRequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:restRequest name="Get" id="655d438e-38b7-474e-901c-3589ec34520b" mediaType="application/json"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>https://api.pinterest.com</con:endpoint><con:request/><con:originalUri>https://api.pinterest.com/v1/boards/615937755226255000/</con:originalUri><con:assertion type="Simple Contains" id="882070e3-8e2c-4ad2-a9aa-3ddc7289a3de" name="id"><con:configuration><token>id</token><ignoreCase>false</ignoreCase><useRegEx>false</useRegEx></con:configuration></con:assertion><con:assertion type="Simple Contains" id="2fddf2ac-3f8c-4ba6-9739-6cf37ffcb7a7" name="name"><con:configuration><token>name</token><ignoreCase>false</ignoreCase><useRegEx>false</useRegEx></con:configuration></con:assertion><con:assertion type="Simple Contains" id="a8e0acbb-cdca-45ac-8a53-45bca9210620" name="Contains"><con:configuration><token>url</token><ignoreCase>false</ignoreCase><useRegEx>false</useRegEx></con:configuration></con:assertion><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:parameters><entry key="access_token" value="AbVHC-XfXkjt0cgeE9rkMMtRUVgcFTEOHwl65LxE8rwi8EA7pwAAAAA" xmlns="http://eviware.com/soapui/config"/></con:parameters></con:restRequest></con:config></con:testStep><con:testStep type="groovy" name="Loop" id="38d0ea18-97c0-42b8-a0ef-4d9d88693ef1"><con:settings/><con:config><script>
+
+def myTestCase = context.testCase
+def runner
+ 
+propTestStep = myTestCase.getTestStepByName("Looper") // get the Property TestStep
+ 
+endLoop = propTestStep.getPropertyValue("StopLoop").toString()
+ 
+if(endLoop.toString() == "T" || endLoop.toString()=="True" || endLoop.toString()=="true"){ 
+	log.info ("Exit Groovy Data Source Looper")
+	propTestStep.setPropertyValue("id", "")
+	propTestStep.setPropertyValue("Total", "")
+	propTestStep.setPropertyValue("Count", "1")
+	propTestStep.setPropertyValue("Next", "")
+	propTestStep.setPropertyValue("StopLoop", "")
+	assert true
+}
+else {
+	testRunner.gotoStepByName("Excel") //setStartStep
+}</script></con:config></con:testStep><con:properties/></con:testCase><con:properties/></con:testSuite><con:properties/><con:wssContainer/><con:oAuth2ProfileContainer/><con:oAuth1ProfileContainer/></con:soapui-project>
